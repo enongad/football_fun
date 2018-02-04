@@ -1,0 +1,33 @@
+library(rvest)
+library(XML)
+library(RCurl)
+library(reshape2)
+
+
+teams <- c("adelaide","brisbane","carlton","collingwood","essendon","fremantle","geelong","goldcoast",
+            "gws","hawthorn","melbourne","north","port","richdmond","stkilda","sydney","westcoast","bulldogs")
+
+statistics <- c("disposals","kicks","marks","handballs","goals","behinds","hitouts","tackles","rebounds","inside50",
+                "clearances","clangers","ff","fa","brownlow","con_pos","uncon_pos","con_mark","mark_in50","oneper",
+                "bounces","ga","play")
+
+
+
+url1 <- "https://afltables.com/afl/stats/teams/adelaide/2017_gbg.html"
+URL <- getURL(url1)
+
+for(j in 1:1){
+  for(i in 1:23){
+
+    x<-readHTMLTable(URL,which=i)
+    xx <- melt(x,id="Player")
+    xx <- xx[xx$value != "",]
+    colnames(xx)[2:3] <- c("round",statistics[i])
+
+    if(i == 1){
+      assign(teams[j], xx)
+      } else{
+        assign(teams[j],merge(x=get(teams[j]),y=xx,by=c("Player","round")))
+        }
+  }
+}
