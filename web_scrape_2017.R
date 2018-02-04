@@ -26,19 +26,21 @@ AppendMe <- function(dfNames) {
 
 
 # year that data will be scrapped
-year=2017
 
+for(year in 2014:2017){
 #### team level of the for loop
 for(j in 1:18){
 
+  ### url string creator
   url1 <- paste0("https://afltables.com/afl/stats/teams/",site_teams[j],"/",year,"_gbg.html")
+  ### certify url
   URL <- getURL(url1)
 
+  ### loop through all statistics
   for(i in 1:23){
 
     x<-readHTMLTable(URL,which=i)
     xx <- melt(x,id="Player")
-  #  xx <- xx[!is.na(xx$value),]
     xx <- xx[xx$value != '',]
 
     colnames(xx)[2:3] <- c("round",statistics[i])
@@ -53,13 +55,17 @@ for(j in 1:18){
 
   }
 
-  cat(paste0(teams[j],"-DONE \n"))
+  cat(paste0(teams[j],"-",year,"-DONE \n"))
 
 }
 
-## use function to append all teams data together
+# use function to append all teams data together
 afl <- AppendMe(teams)
-
-
+afl[,c(3,5:26)] <- sapply(afl[,c(3,5:26)] ,as.numeric)
+afl$year <- year
+afl[is.na(afl)] <- 0
+assign(paste0("afl",year),afl)
 #Output
-save(afl,file=paste0("afl",year,".RData"))
+do.call(save, list(paste0("afl",year), file=paste0("afl",year,".RData")))
+cat(paste("#######",year,"done\n"))
+}
