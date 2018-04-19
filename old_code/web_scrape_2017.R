@@ -3,7 +3,7 @@ library(XML)
 library(RCurl)
 library(reshape2)
 
-setwd("/Users/fabiand/Documents/GitHub/football_fun/")
+setwd("/home/fabian/Documents/AFL_PREDICTIONS/football_fun/")
 
 #names of teams - used to label datasets and create variable "team"
 teams <- c("adelaide","brisbane","carlton","collingwood","essendon","fremantle","geelong","goldcoast",
@@ -29,6 +29,7 @@ AppendMe <- function(dfNames) {
 
 for(year in 2014:2017){
 #### team level of the for loop
+
 for(j in 1:18){
 
   ### url string creator
@@ -39,9 +40,9 @@ for(j in 1:18){
   ### loop through all statistics
   for(i in 1:23){
 
-    x<-readHTMLTable(URL,which=i)
+    x<-readHTMLTable(URL,which=i+1)
     xx <- melt(x,id="Player")
-    xx <- xx[xx$value != '',]
+    xx <- xx[xx$value != " ",]
 
     colnames(xx)[2:3] <- c("round",statistics[i])
 
@@ -51,7 +52,7 @@ for(j in 1:18){
         assign(teams[j],merge(x=get(teams[j]),y=xx,by=c("Player","round")))
       }
 
-    assign(teams[j], `[[<-`(get(teams[j]), 'team', value = teams[j]))
+  #  assign(teams[j], `[[<-`(get(teams[j]), 'team', value = teams[j]))
 
   }
 
@@ -59,13 +60,19 @@ for(j in 1:18){
 
 }
 
+  
 # use function to append all teams data together
 afl <- AppendMe(teams)
 afl[,c(3,5:26)] <- sapply(afl[,c(3,5:26)] ,as.numeric)
 afl$year <- year
+afl = afl[afl$Round != "Tot"]
 afl[is.na(afl)] <- 0
 assign(paste0("afl",year),afl)
 #Output
 do.call(save, list(paste0("afl",year), file=paste0("afl",year,".RData")))
 cat(paste("#######",year,"done\n"))
 }
+
+getwd()
+
+save(afl2017,afl2016,afl2015,afl2014,file="../data/afl_date.Rdata")
